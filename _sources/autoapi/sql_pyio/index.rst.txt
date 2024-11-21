@@ -1,0 +1,28 @@
+sql_pyio
+========
+
+.. py:module:: sql_pyio
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/sql_pyio/io/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   sql_pyio.__version__
+
+
+Package Contents
+----------------
+
+.. py:data:: __version__
+

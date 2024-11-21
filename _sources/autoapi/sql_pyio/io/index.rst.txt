@@ -1,0 +1,19 @@
+sql_pyio.io
+===========
+
+.. py:module:: sql_pyio.io
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   sql_pyio.io.my_fn
+
+
+Module Contents
+---------------
+
+.. py:function:: my_fn()
+
