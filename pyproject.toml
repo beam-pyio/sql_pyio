@@ -18,6 +18,10 @@ scipy = [
     {version = ">=1.9.3", python = ">=3.9, <3.13"}
 ]
 apache-beam = {version = ">=2.44.0"}
+connectorx = [
+    {version = "0.3.3", python = ">=3.8, <3.10"},
+    {version = ">=0.3.3", python = ">=3.10, <3.13"}
+]
 getdaft = {extras = ["sql"], version = ">=0.3.9"}
 
 [tool.poetry.group.dev.dependencies]
