@@ -1,0 +1,121 @@
+sql_pyio.sql_client
+===================
+
+.. py:module:: sql_pyio.sql_client
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   sql_pyio.sql_client.SqlClientError
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   sql_pyio.sql_client.SqlClient
+
+
+Module Contents
+---------------
+
+.. py:exception:: SqlClientError(message=None)
+
+   Bases: :py:obj:`Exception`
+
+
+   Common base class for all non-exit exceptions.
+
+
+   .. py:attribute:: message
+      :value: None
+
+
+
+.. py:class:: SqlClient(db_url: str, use_native_runner: bool = True, **kwargs)
+
+   Bases: :py:obj:`object`
+
+
+   Wrapper for daft package.
+
+
+   .. py:attribute:: use_native_runner
+      :value: True
+
+
+
+   .. py:attribute:: conn
+
+
+   .. py:method:: set_conn(db_url: str, **kwargs) -> Callable[[], sqlalchemy.Connection]
+
+      Sets SQL alchemy connection via a connection factory.
+
+      :param db_url: Database URL.
+      :type db_url: str
+      :param \*\*kwargs: Arguments used to be added to SQL alchemy engine connection.
+
+      :raises SqlClientError: SQL client error.
+
+      :returns: SQLAlchemy connection factory.
+      :rtype: Callable[[], Connection]
+
+
+
+   .. py:method:: return_queries(sql: str, partition_col: Optional[str] = None, num_partitions: Optional[int] = None, partition_bound_strategy: str = 'min-max', disable_pushdowns_to_sql: bool = False, infer_schema: bool = True, infer_schema_length: int = 10, schema: Optional[Dict[str, daft.datatype.DataType]] = None) -> List[str]
+
+      Returns one or more query strings from SQL query configurations.
+
+      :param sql: SQL query to execute.
+      :type sql: str
+      :param partition_col: Column to partition the data. Defaults to None.
+      :type partition_col: Optional[str], optional
+      :param num_partitions: Number of partitions to read the data. Defaults to None.
+      :type num_partitions: Optional[int], optional
+      :param partition_bound_strategy: Strategy to determine partition bounds, either "min-max" or "percentile". Defaults to "min-max".
+      :type partition_bound_strategy: str, optional
+      :param disable_pushdowns_to_sql: Whether to disable pushdowns to the SQL query. Defaults to False.
+      :type disable_pushdowns_to_sql: bool, optional
+      :param infer_schema: Whether to turn on schema inference. Defaults to True.
+      :type infer_schema: bool, optional
+      :param infer_schema_length: The number of rows to scan when inferring the schema. Defaults to 10.
+      :type infer_schema_length: int, optional
+      :param schema: A mapping of column names to datatypes. Defaults to None.
+      :type schema: Optional[Dict[str, DataType]], optional
+
+      :raises SqlClientError: SQL client error.
+
+      :returns: List of query strings.
+      :rtype: List[str]
+
+
+
+   .. py:method:: return_df(sql: str, partition_bound_strategy: str = 'min-max', disable_pushdowns_to_sql: bool = False, infer_schema: bool = True, infer_schema_length: int = 10, schema: Optional[Dict[str, daft.datatype.DataType]] = None) -> daft.DataFrame
+
+      Creates a DataFrame from the results of a SQL query.
+
+      :param sql: SQL query to execute.
+      :type sql: str
+      :param partition_bound_strategy: Strategy to determine partition bounds, either "min-max" or "percentile". Defaults to "min-max".
+      :type partition_bound_strategy: str, optional
+      :param disable_pushdowns_to_sql: Whether to disable pushdowns to the SQL query. Defaults to False.
+      :type disable_pushdowns_to_sql: bool, optional
+      :param infer_schema: Whether to turn on schema inference. Defaults to True.
+      :type infer_schema: bool, optional
+      :param infer_schema_length: The number of rows to scan when inferring the schema. Defaults to 10.
+      :type infer_schema_length: int, optional
+      :param schema: A mapping of column names to datatypes. Defaults to None.
+      :type schema: Optional[Dict[str, DataType]], optional
+
+      :raises SqlClientError: SQL client error.
+
+      :returns: Dataframe containing the results of the query.
+      :rtype: DataFrame
+
+
+

@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sql_pyio.sql_client &mdash; sql_pyio  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            sql_pyio
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">sql_pyio</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../sql_pyio.html">sql_pyio</a></li>
+      <li class="breadcrumb-item active">sql_pyio.sql_client</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for sql_pyio.sql_client</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Licensed to the Apache Software Foundation (ASF) under one or more</span>
+<span class="c1"># contributor license agreements.  See the NOTICE file distributed with</span>
+<span class="c1"># this work for additional information regarding copyright ownership.</span>
+<span class="c1"># The ASF licenses this file to You under the Apache License, Version 2.0</span>
+<span class="c1"># (the &quot;License&quot;); you may not use this file except in compliance with</span>
+<span class="c1"># the License.  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">daft</span>
+<span class="kn">from</span> <span class="nn">daft</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">import</span> <span class="nn">daft.context</span>
+<span class="kn">from</span> <span class="nn">daft.datatype</span> <span class="kn">import</span> <span class="n">DataType</span>
+<span class="kn">import</span> <span class="nn">sqlalchemy</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Connection</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SqlClient&quot;</span><span class="p">,</span> <span class="s2">&quot;SqlClientError&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SqlClientError">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClientError">[docs]</a>
+<span class="k">class</span> <span class="nc">SqlClientError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SqlClientError.message">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClientError.message">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SqlClient">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient">[docs]</a>
+<span class="k">class</span> <span class="nc">SqlClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper for daft package.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">db_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">use_native_runner</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor of the SqlClient.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db_url (str): Database URL</span>
+<span class="sd">            use_native_runner (bool, optional): Indicator whether to use the native runner of daft. Defaults to True.</span>
+<span class="sd">            **kwargs: Arguments used to be added to SQL alchema engine connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SqlClient.use_native_runner">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient.use_native_runner">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_native_runner</span> <span class="o">=</span> <span class="n">use_native_runner</span></div>
+
+<div class="viewcode-block" id="SqlClient.conn">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient.conn">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">db_url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SqlClient.set_conn">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient.set_conn">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_conn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="s2">&quot;Connection&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets SQL alchemy connection via a connection factory.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db_url (str): Database URL.</span>
+<span class="sd">            **kwargs: Arguments used to be added to SQL alchemy engine connection.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SqlClientError: SQL client error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Callable[[], Connection]: SQLAlchemy connection factory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">sqlalchemy</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">db_url</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SqlClientError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to set connection. db_url: </span><span class="si">{</span><span class="n">db_url</span><span class="si">}</span><span class="s2">, error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SqlClient.return_queries">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient.return_queries">[docs]</a>
+    <span class="k">def</span> <span class="nf">return_queries</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">partition_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_partitions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">partition_bound_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;min-max&quot;</span><span class="p">,</span>
+        <span class="n">disable_pushdowns_to_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">infer_schema</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">infer_schema_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns one or more query strings from SQL query configurations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sql (str): SQL query to execute.</span>
+<span class="sd">            partition_col (Optional[str], optional): Column to partition the data. Defaults to None.</span>
+<span class="sd">            num_partitions (Optional[int], optional): Number of partitions to read the data. Defaults to None.</span>
+<span class="sd">            partition_bound_strategy (str, optional): Strategy to determine partition bounds, either &quot;min-max&quot; or &quot;percentile&quot;. Defaults to &quot;min-max&quot;.</span>
+<span class="sd">            disable_pushdowns_to_sql (bool, optional): Whether to disable pushdowns to the SQL query. Defaults to False.</span>
+<span class="sd">            infer_schema (bool, optional):  Whether to turn on schema inference. Defaults to True.</span>
+<span class="sd">            infer_schema_length (int, optional): The number of rows to scan when inferring the schema. Defaults to 10.</span>
+<span class="sd">            schema (Optional[Dict[str, DataType]], optional): A mapping of column names to datatypes. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SqlClientError: SQL client error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[str]: List of query strings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_native_runner</span><span class="p">:</span>
+                <span class="n">daft</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">set_runner_native</span><span class="p">()</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">daft</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span>
+                <span class="n">sql</span><span class="o">=</span><span class="n">sql</span><span class="p">,</span>
+                <span class="n">conn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span>
+                <span class="n">partition_col</span><span class="o">=</span><span class="n">partition_col</span><span class="p">,</span>
+                <span class="n">num_partitions</span><span class="o">=</span><span class="n">num_partitions</span><span class="p">,</span>
+                <span class="n">partition_bound_strategy</span><span class="o">=</span><span class="n">partition_bound_strategy</span><span class="p">,</span>
+                <span class="n">disable_pushdowns_to_sql</span><span class="o">=</span><span class="n">disable_pushdowns_to_sql</span><span class="p">,</span>
+                <span class="n">infer_schema</span><span class="o">=</span><span class="n">infer_schema</span><span class="p">,</span>
+                <span class="n">infer_schema_length</span><span class="o">=</span><span class="n">infer_schema_length</span><span class="p">,</span>
+                <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">physical_plan_scheduler</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">_builder</span><span class="o">.</span><span class="n">to_physical_plan_scheduler</span><span class="p">(</span>
+                <span class="n">daft</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get_context</span><span class="p">()</span><span class="o">.</span><span class="n">daft_execution_config</span>
+            <span class="p">)</span>
+            <span class="n">physical_plan_dict</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">physical_plan_scheduler</span><span class="o">.</span><span class="n">to_json_string</span><span class="p">())</span>
+
+            <span class="n">sql_queries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">physical_plan_dict</span><span class="p">[</span><span class="s2">&quot;TabularScan&quot;</span><span class="p">][</span><span class="s2">&quot;scan_tasks&quot;</span><span class="p">]:</span>
+                <span class="n">sql_queries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">task</span><span class="p">[</span><span class="s2">&quot;file_format_config&quot;</span><span class="p">][</span><span class="s2">&quot;Database&quot;</span><span class="p">][</span><span class="s2">&quot;sql&quot;</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">sql_queries</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SqlClientError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SqlClient.return_df">
+<a class="viewcode-back" href="../../autoapi/sql_pyio/sql_client/index.html#sql_pyio.sql_client.SqlClient.return_df">[docs]</a>
+    <span class="k">def</span> <span class="nf">return_df</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">partition_bound_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;min-max&quot;</span><span class="p">,</span>
+        <span class="n">disable_pushdowns_to_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">infer_schema</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">infer_schema_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a DataFrame from the results of a SQL query.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sql (str): SQL query to execute.</span>
+<span class="sd">            partition_bound_strategy (str, optional): Strategy to determine partition bounds, either &quot;min-max&quot; or &quot;percentile&quot;. Defaults to &quot;min-max&quot;.</span>
+<span class="sd">            disable_pushdowns_to_sql (bool, optional): Whether to disable pushdowns to the SQL query. Defaults to False.</span>
+<span class="sd">            infer_schema (bool, optional):  Whether to turn on schema inference. Defaults to True.</span>
+<span class="sd">            infer_schema_length (int, optional): The number of rows to scan when inferring the schema. Defaults to 10.</span>
+<span class="sd">            schema (Optional[Dict[str, DataType]], optional): A mapping of column names to datatypes. Defaults to None.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            SqlClientError: SQL client error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame: Dataframe containing the results of the query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_native_runner</span><span class="p">:</span>
+                <span class="n">daft</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">set_runner_native</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">daft</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span>
+                <span class="n">sql</span><span class="o">=</span><span class="n">sql</span><span class="p">,</span>
+                <span class="n">conn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span>
+                <span class="n">partition_bound_strategy</span><span class="o">=</span><span class="n">partition_bound_strategy</span><span class="p">,</span>
+                <span class="n">disable_pushdowns_to_sql</span><span class="o">=</span><span class="n">disable_pushdowns_to_sql</span><span class="p">,</span>
+                <span class="n">infer_schema</span><span class="o">=</span><span class="n">infer_schema</span><span class="p">,</span>
+                <span class="n">infer_schema_length</span><span class="o">=</span><span class="n">infer_schema_length</span><span class="p">,</span>
+                <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SqlClientError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Beam PyIO.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

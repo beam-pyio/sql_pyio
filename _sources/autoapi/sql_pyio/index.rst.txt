@@ -11,6 +11,7 @@ Submodules
    :maxdepth: 1
 
    /autoapi/sql_pyio/io/index
+   /autoapi/sql_pyio/sql_client/index
 
 
 Attributes
